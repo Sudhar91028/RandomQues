@@ -18,6 +18,7 @@
       padding: 10px 20px;
       font-size: 18px;
       cursor: pointer;
+      margin: 10px;
     }
   </style>
 </head>
@@ -25,14 +26,16 @@
   <h1>Random Question Picker</h1>
   <div id="question">Press "Get Question" to start!</div>
   <button onclick="getRandomQuestion()">Get Question</button>
+  <button onclick="removeQuestion()">Remove Question</button>
 
   <script>
     // Paths to the files
     const files = ['sudharQues.txt', 'pisasuQues.txt'];
+    let allQuestions = [];
+    let currentQuestion = null;
 
     // Fetch all questions from the files
     async function fetchQuestions() {
-      const allQuestions = [];
       for (const file of files) {
         try {
           const response = await fetch(file);
@@ -47,17 +50,38 @@
           console.error(`Failed to fetch file: ${file}`, error);
         }
       }
-      return allQuestions;
     }
 
     // Display a random question
     async function getRandomQuestion() {
-      const questions = await fetchQuestions();
-      if (questions.length > 0) {
-        const randomIndex = Math.floor(Math.random() * questions.length);
-        document.getElementById('question').textContent = questions[randomIndex];
+      if (allQuestions.length === 0) {
+        await fetchQuestions();
+      }
+
+      if (allQuestions.length > 0) {
+        const randomIndex = Math.floor(Math.random() * allQuestions.length);
+        currentQuestion = allQuestions[randomIndex];
+        document.getElementById('question').textContent = currentQuestion;
       } else {
-        document.getElementById('question').textContent = 'No questions found!';
+        document.getElementById('question').textContent = 'No questions remaining!';
+        currentQuestion = null;
+      }
+    }
+
+    // Remove the current question from the list
+    function removeQuestion() {
+      if (currentQuestion) {
+        allQuestions = allQuestions.filter(question => question !== currentQuestion);
+        currentQuestion = null;
+
+        // Show updated status
+        if (allQuestions.length > 0) {
+          document.getElementById('question').textContent = 'Question removed. Click "Get Question" for another!';
+        } else {
+          document.getElementById('question').textContent = 'No questions remaining!';
+        }
+      } else {
+        document.getElementById('question').textContent = 'No question selected to remove!';
       }
     }
   </script>
